@@ -27,22 +27,6 @@ const render = (el, container) => {
       children: [el],
     },
   };
-  // // create
-  // const dom =
-  //   el.type === "text_node"
-  //     ? document.createTextNode("")
-  //     : document.createElement(el.type);
-  // // set props
-  // Object.keys(el.props).forEach((key) => {
-  //   if (key !== "children") dom[key] = el.props[key];
-  // });
-  // // set children
-  // el.props.children.forEach((child) => {
-  //   render(child, dom);
-  // });
-  // // append
-  // // container.appendChild(dom);
-  // container.append(dom);
 };
 
 let nextUnitOfWork = null;
@@ -55,48 +39,57 @@ function workloop(deadline) {
   requestIdleCallback(workloop);
 }
 
-function performUnitOfWork(work) {
-  if (!work.dom) {
-    // 1. create dom
-    const dom = (work.dom =
-      work.type === "text_node"
-        ? document.createTextNode("")
-        : document.createElement(work.type));
+function createDom(type) {
+  return type === "text_node"
+    ? document.createTextNode("")
+    : document.createElement(type);
+}
 
-    // 2. set props
-    Object.keys(work.props).forEach((key) => {
-      if (key !== "children") dom[key] = work.props[key];
-    });
+function updateProps(dom, props) {
+  Object.keys(props).forEach((key) => {
+    if (key !== "children") dom[key] = props[key];
+  });
+}
 
-    work.parent.dom.append(dom);
-  }
-
-  // 3. transfer list
-  const children = work.props.children;
+function initChild(fiber) {
+  const children = fiber.props.children;
   let prevChild = null;
   children.forEach((child, index) => {
     const newChild = {
       type: child.type,
       props: child.props,
-      dom: child.dom,
+      dom: null,
       child: null,
-      parent: work,
+      parent: fiber,
       sibling: null,
     };
     if (index === 0) {
-      work.child = newChild;
+      fiber.child = newChild;
     } else {
       prevChild.sibling = newChild;
     }
     prevChild = newChild;
   });
+}
+
+function performUnitOfWork(fiber) {
+  if (!fiber.dom) {
+    const dom = (fiber.dom = createDom(fiber.type));
+
+    updateProps(dom, fiber.props);
+
+    fiber.parent.dom.append(dom);
+  }
+
+  initChild(fiber);
+
   // 4. return next unit of work
 
-  if (work.child) return work.child;
+  if (fiber.child) return fiber.child;
 
-  if (work.sibling) return work.sibling;
+  if (fiber.sibling) return fiber.sibling;
 
-  return work.parent.sibling;
+  return fiber.parent.sibling;
 }
 
 requestIdleCallback(workloop);

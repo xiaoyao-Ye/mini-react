@@ -38,3 +38,17 @@ import App from "./App";
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 ```
+
+### 1-14
+
+- 今天学到了什么？
+  - 学会了 requestIdleCallback(fn) 的使用(fn 将会在浏览器空闲时执行), 并实现任务调度器
+  - 分治思想和树转链表的实现
+  - 理解了 fiber 的基本原理, 实现了 fiber 架构
+- 遇到了哪些问题？
+  - 刚开始理解不了树转链表的实现, 然后通过二次观看视频, 逐句理解代码解决
+- 怎么解决的？
+- 这节课对自己有什么帮助？
+- 里面的哪些知识点是可以直接用到工作中的？
+  - 程序就是数据结构+算法
+- 放上你写的代码链接
