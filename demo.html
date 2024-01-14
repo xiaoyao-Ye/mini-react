@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+  <script>
+    const dom = document.createElement("div");
+    dom.innerHTML = "hello";
+    document.body.appendChild(dom);
+
+    let i = 0;
+    while (i < 1000000) {
+      i++;
+    }
+
+    let taskId = 0;
+    function workloop(deadline) {
+      taskId++;
+      console.log(`( deadline )===============>`, deadline.timeRemaining());
+
+      let shouldYield = false;
+      while (!shouldYield) {
+        // while (deadline.timeRemaining() > 1) {
+        // task
+        console.log(`run task:${taskId}`);
+        shouldYield = deadline.timeRemaining() < 1;
+      }
+      // requestIdleCallback(workloop)
+    }
+
+    requestIdleCallback(workloop);
+  </script>
+</html>
