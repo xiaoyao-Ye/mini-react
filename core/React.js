@@ -95,21 +95,27 @@ function initChild(fiber, children) {
   });
 }
 
-function performUnitOfWork(fiber) {
-  const isFunctionComponent = typeof fiber.type === "function";
-  if (!isFunctionComponent && !fiber.dom) {
+function updateFunctionComponent(fiber) {
+  const children = [fiber.type(fiber.props)];
+  initChild(fiber, children);
+}
+
+function updateHostFunction(fiber) {
+  if (!fiber.dom) {
     const dom = (fiber.dom = createDom(fiber.type));
-
     updateProps(dom, fiber.props);
-
-    // fiber.parent.dom.append(dom);
   }
 
-  const children = isFunctionComponent
-    ? [fiber.type(fiber.props)]
-    : fiber.props.children;
-
+  const children = fiber.props.children;
   initChild(fiber, children);
+}
+
+function performUnitOfWork(fiber) {
+  const isFunctionComponent = typeof fiber.type === "function";
+
+  isFunctionComponent
+    ? updateFunctionComponent(fiber)
+    : updateHostFunction(fiber);
 
   // 4. return next unit of work
 
@@ -120,7 +126,6 @@ function performUnitOfWork(fiber) {
     if (nextFiber.sibling) return nextFiber.sibling;
     nextFiber = nextFiber.parent;
   }
-  // return fiber.parent.sibling;
 }
 
 requestIdleCallback(workloop);
