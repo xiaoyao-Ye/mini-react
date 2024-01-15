@@ -27,8 +27,11 @@ const render = (el, container) => {
       children: [el],
     },
   };
+
+  root = nextUnitOfWork;
 };
 
+let root = null;
 let nextUnitOfWork = null;
 function workloop(deadline) {
   let shouldYield = false;
@@ -36,7 +39,24 @@ function workloop(deadline) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
     shouldYield = deadline.timeRemaining() < 1;
   }
+
+  if (!nextUnitOfWork && root) {
+    commitRoot();
+  }
+
   requestIdleCallback(workloop);
+}
+
+function commitRoot() {
+  commitWork(root.child);
+  root = null;
+}
+
+function commitWork(fiber) {
+  if (!fiber) return;
+  fiber.parent.dom.append(fiber.dom);
+  commitWork(fiber.child);
+  commitWork(fiber.sibling);
 }
 
 function createDom(type) {
@@ -78,7 +98,7 @@ function performUnitOfWork(fiber) {
 
     updateProps(dom, fiber.props);
 
-    fiber.parent.dom.append(dom);
+    // fiber.parent.dom.append(dom);
   }
 
   initChild(fiber);
