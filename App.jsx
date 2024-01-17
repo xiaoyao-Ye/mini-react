@@ -3,7 +3,15 @@
 import YReact from "./core/React.js";
 
 function Counter({ num }) {
-  return <div>counter: {num}</div>;
+  function handle() {
+    console.log("click");
+  }
+  return (
+    <div>
+      <span>counter: {num}</span>
+      <button onClick={handle}>click</button>
+    </div>
+  );
 }
 
 function CounterContainer() {
