@@ -1,14 +1,15 @@
-// 告诉 vite 使用 CReact.createElement 去渲染 默认是 React.createElement
-/** @jsx YReact.createElement */
-import YReact from "./core/React.js";
+import React from "./core/React.js";
 
+let count = 10;
 function Counter({ num }) {
   function handle() {
     console.log("click");
+    count++;
+    React.update();
   }
   return (
     <div>
-      <span>counter: {num}</span>
+      <span>counter: {count}</span>
       <button onClick={handle}>click</button>
     </div>
   );
