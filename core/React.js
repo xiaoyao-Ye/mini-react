@@ -173,6 +173,11 @@ function reconcileChild(fiber, children) {
     }
     prevChild = newChild;
   });
+
+  while (oldFiber) {
+    deletions.push(oldFiber);
+    oldFiber = oldFiber.sibling
+  }
 }
 
 function updateFunctionComponent(fiber) {
