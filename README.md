@@ -82,3 +82,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
 count 为什么要写到函数外面?
 count之所以放在外面是因为Counter函数会重新执行, 如果不放在该函数外面会重新声明count变量
+
+### 1-18
+
+- 今天学到了什么？
+  - 完善 diff 更新
+- 遇到了哪些问题？
+  - update的时候发现打印的 currentFiber 永远是 Bar, 发现 wipFiber 也永远是 Bar, 
+- 怎么解决的？
+  - debugger调试后发现 update 的log打印了多次, 思考后发现是将`const update = React.update();` 放置到了 handleClick 里面, 这会导致update的闭包没生效, 移动至 handleClick 外面就好了.
+- 这节课对自己有什么帮助？
+- 里面的哪些知识点是可以直接用到工作中的？
+- 放上你写的代码链接

@@ -38,10 +38,17 @@ let wipRoot = null;
 let currentRoot = null;
 let nextUnitOfWork = null;
 let deletions = [];
+let wipFiber = null;
 function workloop(deadline) {
   let shouldYield = false;
   while (!shouldYield && nextUnitOfWork) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+
+    if (wipRoot?.sibling?.type === nextUnitOfWork?.type) {
+      console.log("hit", wipRoot, nextUnitOfWork);
+      nextUnitOfWork = undefined;
+    }
+
     shouldYield = deadline.timeRemaining() < 1;
   }
 
@@ -185,6 +192,7 @@ function reconcileChild(fiber, children) {
 }
 
 function updateFunctionComponent(fiber) {
+  wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChild(fiber, children);
 }
@@ -220,13 +228,22 @@ function performUnitOfWork(fiber) {
 requestIdleCallback(workloop);
 
 function update() {
-  wipRoot = {
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot,
-  };
+  let currentFiber = wipFiber;
+  console.log(`( React.js: currentFiber )===============>`, currentFiber);
 
-  nextUnitOfWork = wipRoot;
+  return () => {
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    };
+    // wipRoot = {
+    //   dom: currentRoot.dom,
+    //   props: currentRoot.props,
+    //   alternate: currentRoot,
+    // };
+
+    nextUnitOfWork = wipRoot;
+  };
 }
 
 export default { createElement, render, update };
