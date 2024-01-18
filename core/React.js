@@ -136,9 +136,9 @@ function reconcileChild(fiber, children) {
   let prevChild = null;
   children.forEach((child, index) => {
     const isSameType = oldFiber && oldFiber.type === child.type;
-    let newChild;
+    let newFiber;
     if (isSameType) {
-      newChild = {
+      newFiber = {
         type: child.type,
         props: child.props,
         dom: oldFiber.dom,
@@ -149,15 +149,17 @@ function reconcileChild(fiber, children) {
         effectTag: "update",
       };
     } else {
-      newChild = {
-        type: child.type,
-        props: child.props,
-        dom: null,
-        child: null,
-        parent: fiber,
-        sibling: null,
-        effectTag: "placement",
-      };
+      if (child) {
+        newFiber = {
+          type: child.type,
+          props: child.props,
+          dom: null,
+          child: null,
+          parent: fiber,
+          sibling: null,
+          effectTag: "placement",
+        };
+      }
 
       if (oldFiber) {
         deletions.push(oldFiber);
@@ -167,16 +169,18 @@ function reconcileChild(fiber, children) {
     if (oldFiber) oldFiber = oldFiber.sibling;
 
     if (index === 0) {
-      fiber.child = newChild;
+      fiber.child = newFiber;
     } else {
-      prevChild.sibling = newChild;
+      prevChild.sibling = newFiber;
     }
-    prevChild = newChild;
+    if (newFiber) {
+      prevChild = newFiber;
+    }
   });
 
   while (oldFiber) {
     deletions.push(oldFiber);
-    oldFiber = oldFiber.sibling
+    oldFiber = oldFiber.sibling;
   }
 }
 
