@@ -45,7 +45,7 @@ function workloop(deadline) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
 
     if (wipRoot?.sibling?.type === nextUnitOfWork?.type) {
-      console.log("hit", wipRoot, nextUnitOfWork);
+      // console.log("hit", wipRoot, nextUnitOfWork);
       nextUnitOfWork = undefined;
     }
 
@@ -63,8 +63,32 @@ function commitRoot() {
   deletions.forEach(commitDeletion);
   deletions = [];
   commitWork(wipRoot.child);
+  commitEffects();
   currentRoot = wipRoot;
   wipRoot = null;
+}
+
+function commitEffects() {
+  function run(fiber) {
+    if (!fiber) return;
+    if (!fiber.alternate) {
+      fiber.effectHooks?.forEach((hook) => {
+        hook?.callback();
+      });
+    } else {
+      fiber.effectHooks?.forEach((newHook, idx) => {
+        if (!newHook.deps.length) return;
+        const oldEffectHook = fiber.alternate?.effectHooks[idx];
+        const needUpdate = oldEffectHook?.deps.some((oldDep, index) => {
+          return oldDep !== newHook.deps[index];
+        });
+        needUpdate && newHook.callback();
+      });
+    }
+    run(fiber.child);
+    run(fiber.sibling);
+  }
+  run(wipFiber);
 }
 
 function commitDeletion(fiber) {
@@ -194,6 +218,7 @@ function reconcileChild(fiber, children) {
 function updateFunctionComponent(fiber) {
   stateHooks = [];
   stateHookIndex = 0;
+  effectHooks = [];
   wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChild(fiber, children);
@@ -231,7 +256,6 @@ requestIdleCallback(workloop);
 
 function update() {
   let currentFiber = wipFiber;
-  console.log(`( React.js: currentFiber )===============>`, currentFiber);
 
   return () => {
     wipRoot = {
@@ -279,4 +303,13 @@ function useState(initial) {
   return [stateHook.state, setState];
 }
 
-export default { createElement, useState, render, update };
+let effectHooks = [];
+function useEffect(callback, deps) {
+  const effectHook = {
+    callback,
+    deps,
+  };
+  effectHooks.push(effectHook);
+  wipFiber.effectHooks = effectHooks;
+}
+export default { createElement, useState, useEffect, render, update };
